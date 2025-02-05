@@ -8,6 +8,10 @@
 
 
 
+绘制基本图像 [basic_pic.py](basic_pic.py) 
 
+一张图片同时绘制两个坐标图 [two_pic.py](two_pic.py) 
 
-# [TODO](02-1讲解-绘图辅助功能完善-某城市温度变换图)
+剩余部分见[教程](https://www.runoob.com/matplotlib/matplotlib-line.html)
+
+# [TODO]()
