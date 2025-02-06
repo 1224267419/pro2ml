@@ -14,4 +14,10 @@
 
 剩余部分见[教程](https://www.runoob.com/matplotlib/matplotlib-line.html)
 
+
+
+numpy [np_1.py](np_1.py) 
+
+
+
 # [TODO]()
