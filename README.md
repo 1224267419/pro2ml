@@ -2,15 +2,13 @@
 
 ###### 用matplot画图
 
-[huatu.py](huatu.py) 简单折线图
+ [1_basic_pic.py](1_basic_pic.py) 简单折线图
 
 ![image-20250201234708725](README.assets/image-20250201234708725.png)
 
 
 
-绘制基本图像 [basic_pic.py](basic_pic.py) 
-
-一张图片同时绘制两个坐标图 [two_pic.py](two_pic.py) 
+一张图片同时绘制两个坐标图 [two_pic.py](2_two_pic.py) 
 
 剩余部分见[教程 ](https://www.runoob.com/matplotlib/matplotlib-line.html)
 
@@ -18,9 +16,9 @@
 
 ###### numpy 
 
-[np_1.py](np_1.py) 常用numpy数组的构建
+[np_1.py](3_np_1.py) 常用numpy数组的构建
 
-[np_2_compute.py](np_2_compute.py)numpy数组的运算和统计方法
+[np_2_compute.py](4_np_2_compute.py)numpy数组的运算和统计方法
 
 
 
@@ -83,17 +81,53 @@ lbel),强化学习的目标一般是变化的、不明确的，甚至可能不�
 
 训练集上表现差:一般是模型过于简单
 下述方法可以解决或者缓解欠拟合
- ①添加新特征
+ ①添加新特征,特征添加二次或三次项
  ②复杂化模型
  ③减少正则化
+![image-20250211171633258](README.assets/image-20250211171633258.png)
+
+红字的欠拟合和过拟合是指上面的v字线
 
 ##### 过拟合
 
  ①清洗数据
  ②增大训练数据量
- ③正则化
+
+######  ③正则化(减少高次项)
+
+###### ·L2正则化
+
+。作用：可以使得其中一些W的都很小，都接近于0，削弱某个特征的影响
+。优点：越小的参数说明模型越简单，越简单的模型则越不容易产生过拟合现象
+
+###### 。Ridge岭回归(常用<a name="岭回归"></a>
+
+$$
+J(\theta) = \text{RSS} + \alpha \sum_{i=1}^{n} \theta_i^2
+$$
+
+RSS为残差,从而减少回归参数
+
+·L1正则化
+。作用：可以使得其中一些W的值直接为0，删除这个特征的影响
+。LASSO回归(特征较少时使用
+$$
+J(\theta) = \text{RSS} + \alpha \sum_{i=1}^{n} |\theta_i|
+$$
+
+###### 弹性网络Elastic Net(常用
+
+$$
+J(\theta) = \text{MSE}(\theta) + \alpha \sum_{i=1}^{n} |\theta_i| + \frac{1-\rho}{2} \alpha \sum_{i=1}^{n} \theta_i^2
+$$
+
+通过参数r控制L1和L2的比例
+
  ④dropout
  ⑤早停
+
+
+
 
 ##### 标准化
 
@@ -121,7 +155,7 @@ data=transformer.fit_transform(data)
 
 一个机器学习包,提供 **分类,回归,聚类,降维(特征工程),模型选择,调优** 六大模块
 
-#### 1.1 K-近邻算法(KNN)概念 [k_neighbor.py](k_neighbor.py) 
+#### 1.1 K-近邻算法(KNN)概念 [k_neighbor.py](5_k_neighbor.py) 
 
 K Nearest Neighbor算法又叫KNN算法，这个算法是机器学习里面一个比较经典的算法，总体来说KNN算法
 是相对比较容易理解的算法
@@ -269,11 +303,11 @@ kd树在维度<20时效率较高,更高维度的数据可以使用ball tree
 $$
 J(w) = \sum_{i=1}^{m} (h(x_i) - y_i)^2
 $$
-正则化,标准化数据  [Standard.py](Standard.py) 
+正则化,标准化数据  [Standard.py](6_Standard.py) 
 
 
 
-#####  [knn_2.py](knn_2.py) 使用knn对提供的数据集进行拟合和划分
+#####  [knn_2.py](7_knn_2.py) 使用knn对提供的数据集进行拟合和划分
 
 在程序中存在两个函数fit_transform()和transform()
 
@@ -326,7 +360,444 @@ x_test = transfer.transform(x_test)#因为都使用标准化方法,因此上下�
 
 手动设置超参数过于复杂,因此通过对模型预设的超参数组合进行交叉验证,选出最优参数组合较为合理,下面是网格搜索代码
 
+ [Grid_Search.py](8_Grid_Search.py)
+
+```python
+estimator = GridSearchCV(estimator, param_grid=param_dict, cv=5)
+#param_grid为待被筛选的超参数字典； cv为交叉验证的折数,estimator为实例化后的算法模型对象
+```
+
+准确率和最佳结果不一样,是因为交叉验证使用了测试集作为训练集的一部分,因此准确率较高
+(代码26,27行
+
+##### 用knn算法参加比赛
+
+ [比赛链接](https://www.kaggle.com/competitions/facebook-v-predicting-check-ins/data),数据已在本文件夹中 
+[Fcaebook_example.py](9_Fcaebook_example.py) 实际处理,实际还是使用之前的函数
 
 
-# [TODO]()
 
+### 线性回归linear regression
+
+
+
+###### 线性关系
+
+公式如下,其中w,x均为列向量
+$$
+h(x)==w_1 x_1 +w_2 {x_2}+w_3 {x_3}+ b=w^T x + b
+$$
+
+###### 非线性关系
+
+存在高次项的是非线性关系,例子公式如下
+$$
+h(x)=w_1 x_1 +w_2 {x_2}^2+w_3 {x_3}^3+ b \\
+其中
+\mathbf{x} =
+\begin{bmatrix}
+x_1 \\
+x_2 \\
+x_3
+\end{bmatrix}
+\mathbf
+\qquad{w} =
+\begin{bmatrix}
+w_1 \\
+w_2 \\
+w_3
+\end{bmatrix}
+$$
+
+对于线性回归,我们常用的**损失函数**如下:
+$$
+J(w) = (h(x_1) - y_1)^2 + (h(x_2) - y_2)^2 + \cdots + (h(x_m) - y_m)^2 \\
+= \sum_{i=1}^{m} (h(x_i) - y_i)^2
+$$
+
+##### 损失函数
+
+通过计算一个数值，表示模型预测的准确性或误差大小。在训练过程中，模型的目标是通过调整其参数来最小化损失函数的值，从而提高预测的准确性
+
+###### 损失函数决定了算法的思想
+
+##### 损失函数优化
+
+###### 1.正规方程(t通过矩阵运算得到)
+
+$$
+w = (X^T X)^{-1} X^T y
+$$
+
+假设最优解存在,那上述公式必然能**一步求得最优结果**(直接求解w)
+
+缺点:特征过于复杂时计算量大(O(n^3))且得不到结果
+
+##### 2.梯度下降(SGD)
+
+梯度:函数上升速率最快的方向
+
+公式如下:
+$$
+\theta_{i+1} = \theta_{i}-\alpha \cdot J'(\theta_i)\\
+\alpha为学习率
+$$
+学习率太大:错过最低点
+学习率太小:走不到最低点(卡在极小值)
+
+对于多个参数,线性方程的损失函数如下所示
+$$
+ J(\theta_0, \theta_1, \ldots, \theta_n) = \frac{1}{2m} \sum_{j=0}^m \left( h_\theta \left( x_0^{(j)}, x_1^{(j)}, \ldots, x_n^{(j)} \right) - y_j \right)^2 
+$$
+
+$$
+更新后
+\theta_{i+1} =\theta_{i} - \alpha*
+\frac{\partial}{\partial \theta_{i}} J(\theta_{0}, \theta_{1}, \ldots, \theta_{n})
+
+\\=\theta_{i} - \alpha \cdot \frac{1}{m} \sum_{j=0}^{m} \left( h_{\theta} \left( x_{0}^{(j)}, x_{1}^{(j)}, \ldots, x_{n}^{(j)} \right) - y_{j} \right) x_{i}^{(j)}
+$$
+
+不断迭代θ_i直至损失函数J<一个值
+
+###### 全梯度下降FG
+
+计算所有样本误差,再进行梯度下降,中途不能添加样本
+
+###### 随机梯度下降SG
+
+随机选择单个样本,可以有噪声影响
+
+###### mini-batch
+
+选择一定批量来做下降,上述二者结合体
+
+###### 随机平均梯度下降算法SAG
+
+使用前n-1个梯度和当前梯度的均值,性能高,收敛效果好
+
+```python
+from sklearn.linear_model import  LinearRegression #线性回归
+from sklearn.linear_model import  SGDRegressor #梯度下降
+```
+
+常用函数
+
+ [11_price_predice.py](11_price_predice.py) 训练波士顿房价的线性模型,数据获取部分从网上解决
+
+```python
+model = LinearRegression()  # 默认使用正规方程而非梯度下降法
+model2 = SGDRegressor(max_iter=1000,learning rate="constant",eta0=0.001)  # 梯度下降法的线性回归,有许多参数可以调节,包括学习率,是否自动降低学习率等
+```
+
+两个模型的实例化,SGD有丰富的参数可以调节
+
+##### [岭回归的定义](#岭回归)
+
+为[11_price_predice.py](11_price_predice.py)列出了三个函数,对比了不同训练方法得出的均方差,
+
+```python
+from sklearn.linear_model import Ridge, RidgeCV  # 线性回归
+```
+
+引入岭回归和支持网格搜索的岭回归(自带最优参数
+
+
+
+
+
+#### 模型的保存和加载
+
+[11_price_predice.py](11_price_predice.py)文件中存在
+
+```python
+model=joblib.load("data.pkl")#模型读取
+joblib.dump(model,"./data.pkl")#模型保存
+```
+
+### 逻辑回归(Logistic Regression)
+
+分类模型,用于类别的判断
+
+输入:线性回归的结果
+
+##### 激活函数:
+
+sigmoid函数
+$$
+\sigma(x) = \frac{1}{1 + e^{-h(w)}}= \frac{1}{1 + e^{-W^Tx}}
+$$
+通过这个激活函数返回一个(0,1)之间的值,可以用于二分类,下图为sigmoid的图形,常用于二分类
+![image-20250212013857407](README.assets/image-20250212013857407.png)
+
+**激活函数决定了神经网络的输出形式**，而**损失函数**需要与这种输出形式相匹配，以正确**衡量预测与真实值之间的差异**。
+
+- **分类任务**：
+  - **激活函数**：输出层通常使用 **Softmax**（多分类）或 **Sigmoid**（二分类），将输出映射为概率分布。
+  - **损失函数**：对应使用**对数似然损失** ,也称**交叉熵损失（Cross-Entropy Loss）**，$\text{Cross-Entropy Loss} = - \sum_{i=1}^{K} y_i \log(p_i)$直接衡量概率分布的差异。
+  - **数学优势**：Softmax + 交叉熵的组合在反向传播时梯度计算更高效（梯度简化），避免了数值不稳定性。 
+- **回归任务**：
+  - **激活函数**：输出层通常使用 **线性激活函数**（无激活），直接输出连续值。
+  - **损失函数**：常用 **均方误差（MSE）** 或 **平均绝对误差（MAE）**，衡量预测值与真实值的距离。
+
+````
+sklearn.linear_model.LogisticRegression(solver='liblinear',penalty='12',C= 1.0)
+````
+
+上述代码为逻辑回归的API,相当于`SGDClassifier(loss="log",penalty="")`,即用交叉熵作为损失函数的随机梯度下降(SAG)
+
+`solver='liblinear'`仅用于one-versus-rest问题(多分类转化为多个二分类),其他参数见代码
+
+对于pandas中的df,
+loc：通过行、列的名称或标签来索引
+iloc：通过行、列的索引位置来寻找数据
+在下述文件中给出了一个访问癌症患者数据的程序,实现了逻辑回归
+
+ [12_breast_cancer_wisconsin_original.py](12_breast_cancer_wisconsin_original.py) 
+
+##### 混淆矩阵
+
+**TP（True Positive）**：真正例，实际为正例且被预测为正例的样本数。
+
+**TN（True Negative）**：真负例，实际为负例且被预测为负例的样本数。
+
+**FP（False Positive）**：假正例，实际为负例但被预测为正例的样本数。
+
+**FN（False Negative）**：假负例，实际为正例但被预测为负例的样本数。
+$$
+1\,\,\,\,\,\,\,\,\,\,\,\,\,\,\,\,\;预测结果
+\\真实结果
+\begin{bmatrix} 
+\text{TP} & \text{FP} \\
+\text{FN} & \text{TN}
+\end{bmatrix}
+$$
+
+准确度$$
+\text{Accuracy} = \frac{TP + TN}{TP + FP + TN + FN}
+$$正确率
+
+精确率$$
+\text{Precision} = \frac{TP}{TP + FP}
+$$**真正例+伪正例**
+
+召回率$$
+\text{Recall} = \frac{TP}{TP + FN}
+$$**真正例+伪反例**
+
+$\text{F1} = 2 \times \frac{\text{Precision} \times \text{Recall}}{\text{Precision} + \text{Recall}}= \frac{2TP}{2TP+FN+FP}$
+
+```python
+sklearn.metrics.classification_report(y_true,y_pred,labels=[真实值标签],target_names=None(替换混淆矩阵的标签,用元组装载))
+```
+
+ [12_breast_cancer_wisconsin_original.py](12_breast_cancer_wisconsin_original.py) 代码
+
+##### 分类评估
+
+对于数学天赋,我们笼统认为所有人都没有,正确率高达99.99%
+为了解决这种样本不均衡(通常<1:4时)的问题,
+我们可以通过ROC曲线和AUC指标来解决
+
+##### ROC曲线和AUC指标
+
+$$
+\text{TPR}=\text{Recall} = \frac{TP}{TP + FN}
+所有真实类别为1的样本中，预测类别为1的比例\\
+\text{FPR}=\frac{FP}{FP + TN}所有真实类别为0的样本中，预测类别为1的比例
+$$
+
+![image-20250213003812747](README.assets/image-20250213003812747.png)
+
+ROC 曲线以FPR作为横轴，TPR作为纵轴，展示模型在不同阈值下的表现。随着分类阈值的变化，模型的 FPR 和 TPR 也会相应变化，绘制出的曲线即为 ROC 曲线。
+
+理想情况下,ROC 曲线应尽可能接近左上角，表示模型在高 TPR 的同时保持低 FPR
+
+AUC（Area Under the Curve，曲线下面积）是 ROC 曲线下方的面积，数值范围从 0 到 1。**AUC 值越接近 1，表示模型的分类性能越好**；AUC 值为 0.5 时，表示模型的分类能力与随机猜测相当(等于乱猜)。AUC 提供了一个综合的评估指标，能够有效地比较不同模型的性能。
+**AUC 的直观解释是：在所有可能的分类阈值下，模型将正样本的预测分数排在负样本之前的概率。**
+
+缺点:仅适用于二分类的分类器
+
+
+
+##### 处理样本不均衡问题
+
+``pip3 install imbalanced-learn``下载该包
+
+   [13_supplement_imblearn.py](13_supplement_imblearn.py) 代码如链接
+
+###### 过采样方法
+
+​	增加数国少那一类样本的数量
+
+###### 欠采样方法
+
+​		减少数量较多那一类样本的数量
+
+**随机过采样**
+在少数类中随机选择⼀些样本，然后通过复制所选择的样本生成样本集。
+
+缺点:训练复杂度增加,容易过拟合
+优化:使用SMOTE算法(合成少数类过采样技术)
+
+##### **smote**:
+
+在点间做平滑而不是直接重复样本点,
+
+![image-20250213170313172](README.assets/image-20250213170313172.png)
+
+<img src="README.assets/image-20250213170545512.png" alt="image-20250213170545512" style="zoom:50%;" /><img src="README.assets/image-20250213165543191.png" alt="image-20250213165543191" style="zoom:50%;" />
+
+
+
+##### 随机欠采样:
+
+可能丢失重要特征
+
+![image-20250213170313172](README.assets/image-20250213170313172.png)
+
+<img src="README.assets/image-20250213170656835.png" alt="image-20250213170656835" style="zoom:50%;" />
+
+
+
+
+
+### 决策树
+
+常见的**ID3,C4.5,CART**算法
+
+#### ID3
+
+使用信息熵作为划分属性
+
+###### 信息熵
+
+公式如下
+$$
+H(X) = - \sum_{i=1}^{n} p(x_i) \log p(x_i)
+$$
+用不确定性(熵)的减少判断信息含量
+
+例子1：假如有三个类别，分别占比为：{1/3,1/3,1/3}，信息熵计算结果为：
+
+$H=-\frac{1}{3}\log(\frac{1}{3})-\frac{1}{3}\log(\frac{1}{3})-\frac{1}{3}\log(\frac{1}{3})=1.0986$
+
+例子2：假如有三个类别，分别占比为：{1/10,2/10,7/10}，信息熵计算结果为：
+
+$H=-\frac{1}{10}\log(\frac{1}{10})-\frac{2}{10}\log(\frac{2}{10})-\frac{7}{10}\log(\frac{7}{10})=0.8018$
+
+**熵越大，表示整个系统不确定性越大，越随机，反之确定性越强。**
+
+特征$A$对训练数据集D的信息增益$g(D,A)$，定义为集合$D$的熵$H(D)$与特征A给定条件下D的熵$H(D|A)$之差。(划分前-划分后)
+
+$g(D,A)=H(D)-H(D|A)$
+
+其中
+
+$H(D\mid A)=\sum\limits{i=1}^{n}\frac{\mid D_i\mid}{\mid D\mid}H(D_i)=-\sum\limits{i=1}^{n}\frac{\mid D_i\mid}{\mid D\mid}\sum\limits{k=1}^{K}\frac{\mid D{ik}\mid}{\mid D_i\mid}\log_2\frac{\mid D_{ik}\mid}{\mid D_i\mid}$
+
+一般而言，信息增益越大，则意味着**使用属性 a 来进行划分所获得的"纯度提升"越大**。因此，我们可**用信息增益来进行决策树的划分属性选择**， **ID3 决策树**以信息增益为准则来选择划分属性。 
+
+###### 缺点:
+
+信息增益对于可取数目较多的属性有所偏好(比如用序号作为划分属性),因此**C4.5决策树**使用**信息增益率**来选择**最优划分属性**
+
+#### C4.5
+
+使用信息增益率来划分**多叉树**,解决了上述ID3的缺点
+
+##### 信息增益率 (IGR)
+
+信息增益 (IG) 的公式： 
+$$
+IG(A) = H(D) - H(D \mid A)
+$$
+
+其中，
+- \( H(D) \) 表示数据集 \( D \) 的熵，
+- \( H(D \mid A) \) 表示在特征 \( A \) 条件下的条件熵。
+
+---
+
+**固有值 (IV) 的公式：**
+$$
+IV(A) = -\sum_{i=1}^{n} \frac{|D_i|}{|D|} \log_2 \left(\frac{|D_i|}{|D|}\right)
+$$
+
+其中，
+- \( |D_i| \) 是特征 \( A \) 第 \( i \) 个取值对应的数据子集的大小，
+- \( |D| \) 是整个数据集的大小。
+
+---
+
+**信息增益率 (IGR) 的公式：**
+$$
+IGR(A) = \frac{IG(A)}{IV(A)}
+$$
+
+#### CART算法
+
+通过比较基尼值划分**二叉树**,基尼值越小越好
+
+###### 基尼值
+
+数据集中任意两个样本标签不一致的概率
+$$
+Gini(D) = \sum_{k=1}^{|y|} \sum_{k' \neq k} p_k p_{k'} = 1 - \sum_{k=1}^{|y|} p_k^2
+$$
+基尼值越小,数据集D纯度越高
+
+###### 基尼指数(经过特征a分割后的基尼值
+
+$$
+Gini\_index(D, a) = \sum_{v=1}^{V} \frac{D^v}{D} Gini(D^v)
+$$
+
+一般会选划分后基尼系数最小的属性作为最优划分属性
+
+其中：
+
+- Gini_index(D,a) 是特征 a 的 Gini 指数。
+- D^v 是特征a 的取值 v 对应的子集。
+- D 是数据集 D 的总大小。
+- Gini(D^v) 是子集 D^v的 Gini 指数。
+- V 是特征a 的取值个数。
+
+**CART算法通过基尼指数**实现
+CART同时进行了分类和回归,因此**可以处理离散和连续属性**(ID3,C4.5只能处理离散属性)
+
+
+
+#### 剪枝
+
+目的:抛开噪声和过拟合,**提升泛化性能**
+
+##### 预剪枝
+
+在决策树生成过程中，对每个结点在划分前先进行估计，若当前结点的划分不能带来决策树泛化性能提升，则停止划分并将当前结点标记为叶结点；
+
+##### 后剪枝
+
+生成一棵完整的决策树，然后自底向上地**对非叶结点进行考察**，若将该结点对应的子树替换为叶结点能带来决策树泛化性能提升，则将该子树替换为叶结点。
+
+##### 总结
+
+后剪枝通常比预剪枝决策树保留了更多的分支。
+一般情形下，后剪枝的欠拟合风险很小，**泛化性能往往优于预剪枝**。
+后剪枝的训练开销比未剪枝决策树和预剪枝决策树都要大得多
+
+#### 多变量决策树(如OC1)
+
+通过一组特征的线性组合来决策,建议搜索看看原理
+
+
+
+
+
+
+
+部分代码和笔记可以在这里找到
+
+# [TODO](https://zsyll.blog.csdn.net/category_10993525_2.html)
+
+[链接](https://blog.csdn.net/2201_75415080?type=blog) 这里也有
