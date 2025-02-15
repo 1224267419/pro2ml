@@ -46,11 +46,12 @@ transfer = StandardScaler()  # 实例化转换器类
 # iris['data']=transfer.fit_transform(iris['data'])#应当先划分数据,再做标准化
 x_train, x_test, y_train, y_test = train_test_split(iris['data'], iris['target'], test_size=0.2, random_state=22,
                                                     stratify=iris['target'])  # 划分数据集
+# stratify 用于保证分布相同
 
 # 数据标准化
 x_train = transfer.fit_transform(x_train)
 # x_test = transfer.fit_transform(x_test)
-x_test = transfer.transform(x_test)#因为都使用标准化方法,因此上下二式子等价(相同fit)
+x_test = transfer.transform(x_test)  # 因为都使用标准化方法,因此上下二式子等价(相同fit)
 
 # 此处的stratify用于确保分割的测试集和验证集拥有相同的数据比例
 # 上述代码用于划分训练集和测试集,其中测试集占20%,随机数种子为22
