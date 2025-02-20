@@ -832,7 +832,153 @@ class sklearn.tree.DecisionTreeClassifier(criterion='gini',max_depth=None,random
 
 生成的树(*.dot)可以在http://webgraphviz.com/中查看
 
-02-1
+
+
+
+
+##### 回归决策树
+
+上述决策树均对于离散的目标值实现,
+连续值使用回归决策树
+
+⼀个回归树对应着输入空间（即特征空间）的⼀个划分以及在划分单元上的输出值。分类树中，我们采用信息论中的方法，通过计算选择最佳划分点。
+
+而在回归树中，采用的是启发式的方法。假如我们有n个特征，每个特征有s_i(i ∈ (1, n))个取值，那我们遍历所有特征， 尝试该特征所有取值，对空间进行划分，直到取到特征 j 的取值 s，使得损**失函数最小**，这样就得到了⼀个划分点。描述该过程的公式如下：
+$$
+min_{loss}=\min_{j, s} \left[ \min_{c_1} \sum_{x_i \in R_1(j, s)} (y_i - c_1)^2 + \min_{c_2} \sum_{x_i \in R_2(j, s)} (y_i - c_2)^2 \right] \\
+其中c_i为分类R_i中y的均值
+$$
+通过上述损失(方差)找到最佳分割点()
+
+ [代码](16_compete_liner_and_dec_tree.py) 
+
+```python
+from sklearn.tree import DecisionTreeRegressor
+```
+
+上述为sklearn的回归决策树,允许使用连续值来进行决策,实际对比可以看图
+![image-20250220150742201](C:\Users\Administrator\AppData\Roaming\Typora\typora-user-images\image-20250220150742201.png)
+
+
+
+
+
+### 集成学习
+
+- 什么是集成学习
+  - 通过建立几个模型来解决单一预测问题
+- 机器学习两个核心任务
+  - 1.解决欠拟合问题
+    - 弱弱组合变强
+    - boosting
+  - 2.解决过拟合问题
+    - 互相遏制变壮
+    - Bagging
+
+。
+
+#### 2.1 Bagging集成原理
+
+**1.采样不同数据集**
+**2.训练分类器**
+**3.平权投票，获取最终结果**![在这里插入图片描述](https://i-blog.csdnimg.cn/blog_migrate/e5fdcd29772f78636af546e7d7a9b9cf.png)
+
+即通过多个弱分类器,少数服从多数实现强效果
+
+#### 2.2 随机森林构造过程
+
+**随机森林是一个包含多个决策树的分类器**，并且其输出的类别是由个别树输出的类别的众数而定。
+
+即:**随机森林 = Bagging + 决策树**
+
+![在这里插入图片描述](https://i-blog.csdnimg.cn/blog_migrate/255fe666d3d9ac556ff4affa23b04e1a.png)
+
+例如, 如果你训练了15个树, 其中有4个树的结果是True, 11个树的结果是False, 那么最终投票结果就是False
+
+**随机森林够造过程中的关键步骤**（M表示特征数目）：
+
+1）一次随机选出一个样本，**有放回的抽样**，**重复N次**（有可能出现重复的样本）
+
+2） 随机去选出m个特征, m <<M，建立决策树
+
+**有放回地抽样**:使得树间的训练样本范围相同,最终训练结果相近
+**随机抽样训练集**:使得决策树泛化能力强
+
+#### 2.3 包外估计 (Out-of-Bag Estimate)
+
+在随机森林构造过程中，如果进行有放回的抽样，我们会发现，**总是有⼀部分样本我们选不到**。
+
+数据足够多的情况下,包外数据的概率为$$\left(1 - \frac{1}{N}\right)^N = \frac{1}{\left(\frac{N}{N-1}\right)^N} = \frac{1}{\left(1 + \frac{1}{N-1}\right)^N} \approx \frac{1}{e}$$
+即被选到的数据约占所有**数据的63%**,因此剩余的37%的未选中的包外数据可**以用作分类器的验证集**(val_data)
+
+#####  2.3.2 包外估计的用途
+
+- 当基学习器是决策树时，可使⽤包外样本来辅助剪枝 ，或用于估计决策树中各结点的后验概率以辅助对零训练样本结点的处理；
+- 当基学习器是神经网络时，可使用包外样本来辅助早期停止以减小过拟合 。
+
+
+
+#### 2.4 随机森林代码及api
+
+`sklearn.ensemble.RandomForestClassifie()`分类
+
+`sklearn.ensemble.RandomForestRegressor()`回归
+
+n_estimators : 推荐0-200之间的数值
+这是森林中树木的数量，即基评估器的数量。
+
+Criterion（default =“gini”）分割特征的测量方法
+
+random_state ：控制生成随机森林的模式。并不能控制森林中的树的样式。随机性越大，模型效果越好，当然这样可能就不是很稳定，不便于调试。想要模型稳定，可以设置random_state参数
+
+bootstrap ：控制抽样技术的参数，默认为True。采用有放回的随机抽样数据来形成训练数据。
+
+oob_score ：默认为False，True表示用包外数据来测试模型。可以通过oob_score_来查看模型的准取度。
+
+max_depth：default=None，树的最大深度 
+
+max_features: default ="auto”,每个决策树的最大特征数量
+
+- If “auto” or “sqrt”, max_features=sqrt(n_features).
+- If “log2”, then max_features=log2(n_features).
+- If None, then max_features=n_features.
+
+min_samples_split:节点划分最少样本数
+min_samples_leaf:叶子节点的最小样本数
+
+
+
+#### 2.5 boosting
+
+**随着学习的积累从弱到强**,每加入一个弱学习器,整体能力就会得到提升,每一次学习都强化判断错误的数据,削弱判断正确的数据
+
+![img](./assets/bd43dc061a934b7b4bbafc764b0f72a0.png)
+
+#### 2.6 bagging集成与boosting集成的区别
+
+##### 2.6.1 数据方面
+
+Bagging：对数据进行采样训练；
+Boosting：根据**前⼀轮**学习**结果**调整数据的重要性。
+
+##### 2.6.2 投票方面
+
+Bagging：所有学习器**平权投票**；
+Boosting：对学习器进行**加权投票**。
+
+##### 2.6.3 学习顺序
+
+Bagging的学习是并行，学习器间没有依赖关系；
+Boosting的学习是串行，后一个学习器依赖前一个
+
+##### 2.6.4 主要作用
+
+Bagging主要用于提高泛化性能（解决过拟合，降低方差）
+Boosting主要用于提高训练精度 （解决欠拟合，降低偏差）
+
+
+
+
 
 部分代码和笔记可以在下面找到
 

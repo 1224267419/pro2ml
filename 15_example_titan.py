@@ -62,12 +62,11 @@ def demo2():
     print(y_pred)
     y_pred=pd.DataFrame(y_pred)
     # y_pred.to_csv("./titan_dataset/y_pred.csv", index=False)
-
     export_graphviz(estimator, out_file="./titan_dataset/tree.dot",
                     feature_names=['age', 'pclass','女性', '男性'])
 #根据模型进行保存决策树,并保存为dot格式
 #生成的树可以在http://webgraphviz.com/中查看
 
 if __name__ == '__main__':
-    # demo1()
-    demo2()
+    demo1()
+    # demo2()
