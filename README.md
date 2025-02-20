@@ -1014,7 +1014,29 @@ $$
 `from sklearn.ensemble import AdaBoostClassifier`
 adaboost的类,用法和之前的方法类似
 
-#### 2.7 GBDT
+#### 2.7 GBDT(Gradierit Boosting Decision Tree,梯度提升树)
+
+##### 2.7.1 Decision Tree
+
+GBDT的Decision Tree使用的是**CART回归树**,因为每次迭代要**拟合梯度值(残差)**,因此使用回归树才能求出梯度 
+
+##### 2.7.2 Gradierit Boosting 
+
+利用损失函数的梯度作为提升树算法中残差(方差)的近似值
+
+
+
+  
+
+
+
+
+
+
+
+
+
+
 
 
 
