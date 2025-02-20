@@ -976,7 +976,45 @@ Boosting的学习是串行，后一个学习器依赖前一个
 Bagging主要用于提高泛化性能（解决过拟合，降低方差）
 Boosting主要用于提高训练精度 （解决欠拟合，降低偏差）
 
+$$F_{m}(x)$$为拥有m个弱学习器的强学习器 ,  $$G_m(x)$$ 是第m次迭代产生的弱学习器,且  $$G_m(x)$$={+1 , -1} ,$$F_{m}(x)$$公式如下
+$$
+F_m(x) = F_{m-1}(x) + \alpha_m G_m(x)\\
+其中 \alpha_{m+1}={1/2}*ln(
+\frac{1-\varepsilon_m} {\varepsilon_{m}} )
+$$
+对于上述强分类器$$F_{m}(x)$$,其损失函数可以表达为
+$$
+L(x, y) = L(F_{m-1}(x) + \alpha_m G_m(x), y)
+$$
 
+
+
+
+经过第t轮的分类器的分类后,第t+1轮特征的权重分布
+$$
+D_{t+1}(x) = \frac{D_t}{Z_t} \times 
+\begin{cases} 
+e^{-a t}, & \text{if 预测正确} \\
+e^{a t}, & \text{if 预测错误} \\
+\end{cases}
+\\
+ 
+其中 Z_t=e^{\alpha_t}*\varepsilon_m+e^{-\alpha_t}*(1-\varepsilon_m)
+$$
+
+最终,分类器可以定义为
+$$
+H_3(x) = \text{sign}\left[
+\sum_{i=1}^{n} \alpha_{i}h_i(x)
+\right]
+$$
+
+###### boost api
+
+`from sklearn.ensemble import AdaBoostClassifier`
+adaboost的类,用法和之前的方法类似
+
+#### 2.7 GBDT
 
 
 
