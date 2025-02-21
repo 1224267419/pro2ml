@@ -952,7 +952,7 @@ min_samples_leaf:叶子节点的最小样本数
 
 **随着学习的积累从弱到强**,每加入一个弱学习器,整体能力就会得到提升,每一次学习都强化判断错误的数据,削弱判断正确的数据
 
-![img](./assets/bd43dc061a934b7b4bbafc764b0f72a0.png)
+![img](./README.assets/bd43dc061a934b7b4bbafc764b0f72a0-1740142187805-2.png)
 
 #### 2.6 bagging集成与boosting集成的区别
 
@@ -1050,7 +1050,6 @@ $$
    c_m = \frac{1}{N} \sum_{x_i \in R_m(j,s)} y_i, \quad x \in R_m, \quad m = 1, 2
    $$
    
-   
 3. 继续对两个子区域递归调用 步骤1,2 ，直至满足停止条件。
 
 4. 将输入空间划分为 \( M \) 个区域 \( R_1, R_2, \ldots, R_M \)，生成决策树：
@@ -1082,15 +1081,142 @@ init: 即初始化时候的弱学习器，对应GBDT原理里面的$$f_{0}(x)$$�
 
 **alpha：**这个参数只有GradientBoostingRegressor有，当我们使用Huber损失"huber"和分位数损失“quantile”时，需要指定分位数的值。默认是0.9，如果噪音点较多，可以适当降低这个分位数的值。
 
-#### 2.8 xgboost (Extreme Gradient Boosting)极端梯度提升树
+#### 2.8 XGboost (Extreme Gradient Boosting)极端梯度提升树
+
+[参考链接](https://www.bilibili.com/video/BV1nP4y177rw?vd_source=82d188e70a66018d5a366d01b4858dc1&spm_id_from=333.788.player.switch)
+
+##### 2.8.1 简介
+
+**XGBoost= 二阶泰勒展开+boosting+CART+正则化**
+
+每一轮学习中，XGBoost 对损失函数进行二阶泰勒展开，**使用一阶和二阶梯度进行优化**。
+
+##### 2.8.2 目标函数
+
+对于使用CART树的XGboost , 模型目标函数为损失+复杂度惩罚,即
+$$
+obj=\min_{f \in F} \frac{1}{N} \sum_{i=1}^{N} L(y_i, f(x_i)) + \Omega(f)\\
+其中\Omega(f)为模型f的复杂度\\
+\Omega(f)= \gamma T + \frac{1}{2} \lambda \|w\|^2\\
+T:叶子节点数\;\;\;\;\gamma:节点分割的难度\\
+\;\;\;w:叶子节点向量的模\;\;\;\;\lambda:L2正则 化系数
+$$
+上式被称为**结构风险最小化** , 可以有效防止过拟合
+
+##### 2.8.3迭代学习模型的目标函数
+根据上式，共进行 $ t $ 次迭代的学习模型的目标函数为：
 
 $$
-\min_{f \in F} \frac{1}{N} \sum_{i=1}^{N} L(y_i, f(x_i)) + \lambda J(f)\\
-其中J(f)为模型f的复杂度
+\mathcal{L}^{(t)} = \sum_{i=1}^{n} L(y_i, \hat{y}_i^{(t)}) + \sum_{k=1}^{t} \Omega(f_k)
+$$
+
+由**前向分布算法**可知，前 $ t-1 $ 棵树的结构为常数，第 $ t $ 棵树的目标函数为：
+
+$$
+\text{obj}^{(t)} = \sum_{i=1}^{n} L(y_i, \hat{y}_i^{(t-1)} + f_t(x_i)) + \Omega(f_t)\\
+$$
+
+泰勒公式的二阶导近似表示为：
+
+$$
+f(x_0 + \Delta x) \approx f(x_0) + f'(x_0) \cdot \Delta x + \frac{f''(x_0)}{2} \cdot (\Delta x)^2
 $$
 
 
 
+令 $ f_t(x_i) = \Delta x $，则（3.5）式的二阶近似展开为：
+
+$$
+\text{obj}^{(t)} \approx \sum_{i=1}^{n} \left[ L(y_i, \hat{y}_i^{(t-1)}) + g_i f_t(x_i) + \frac{1}{2} h_i f_t^2(x_i) \right] + \Omega(f_t)+常数\\
+仅展开f_t(x_i)这一项,其余n-1项均为常数\\
+其中\;g_i为f'(x_0) \;\;\;\;\;h_i为f''(x_0)
+$$
+
+$$
+\text{obj}^{(t)} = \sum_{i=1}^{n} \left[ g_i \cdot f_t(x_i) + \frac{1}{2} h_i \cdot f_t(x_i)^2 \right] + \gamma T + \frac{1}{2} \lambda \sum_{j=1}^{T} w_j^2
+$$
+
+
+
+**解释**：
+
+- 第一部分是对所有训练样本集进行累加。
+- 此时，**所有样本都映射为树的叶子节点**。(样本空间其实就是叶子节点的输出)
+
+换种思维，**从叶子节点出发**，对所有的叶子节点进行累加：
+
+$$
+\text{obj}^{(t)} = \sum_{j=1}^{T} \left[ \left( \sum_{i \in I_j} g_i \right) w_j + \frac{1}{2} \left( \sum_{i \in I_j} h_i + \lambda \right) w_j^2 \right] + \gamma T\\
+=\text{obj}^{(t)} = \sum_{j=1}^{T} \left[ \left( G_i  \right) w_j + \frac{1}{2} \left( H_i + \lambda \right) w_j^2 \right] + \gamma T
+$$
+
+- $ G_j $ 表示映射为叶子节点 $ j $ 的所有输入样本的一阶导之和。
+- $ H_j $ 表示映射为叶子节点 $ j $ 的所有输入样本的二阶导之和。
+- $ w_j $ 是第 $ j $ 个叶子节点的权重。
+- $ \gamma $ 和 $ \lambda $ 是正则化参数。
+
+
+
+对于第 $ t $ 棵 CART 树的某一个确定结构（可用 $ q(x) $ 表示），其叶子节点是相互独立的，$ G_j $ 和 $ H_j $ **是确定量**。因此，可以看成是关于叶子节点 $ w $ 的一元二次函数。**最小化(导数值=0)**$$obj^{(t)}$$，得：
+
+$$
+w_j^* = -\frac{G_j}{H_j + \lambda}
+$$
+
+**回代原式**，得到最终的打分函数（scoring function）：
+$$
+\text{obj}^* = -\frac{1}{2} \sum_{j=1}^{T} \frac{G_j^2}{H_j + \lambda} + \gamma T
+$$
+
+- 它是衡量**树结构好坏**的标准。
+- **值越小**，代表这样的结构越好。
+- 我们用**打分函数选择最佳切分点**，从而构建 CART 树。
+
+
+
+ 
+
+##### 2.8.4 树形选择
+
+- 穷举法列出所有树形(开销太大,不现实)
+
+- 精确贪心算法,图示如下
+
+  ![image-20250221204835801](./README.assets/image-20250221204835801.png)
+
+  - 信息增益,这里用作**目标值的减少程度**,由上式可知增益公式如下
+
+  - $$
+    gain=obj_{前}^* -obj_{后}^* =obj_{前}^*-obj_{后L}^*-obj_{后R}^*  \\
+    =
+    \frac{1}{2} 
+    \sum_{j=1}^{T} [
+    \frac{G_L^2}{H_L + \lambda} +
+    \frac{G_j^2}{H_R + \lambda} -
+    \frac{{(G_j+G_R)}^2}{H_R + H_R+\lambda}]-\gamma\\
+    其中\gamma为引入新叶子节点的代价
+    $$
+    
+  - 由贪心算法选择增益最小的结构即可,下面**是节点不分割的情况**
+    1. 所有分割增益均≤0,则不分割
+    2. 页叶子宽度或树的深度到达阈值
+    3. 叶子节点**权重和达到阈值**或**叶子节点**包含**样本数量太少**
+
+##### 2.8.5 XGBoost.与GDBT的区别
+
+###### 区别一：
+
+。XGBoost**生成CART树考虑了树的复杂度**，
+。GDBT未考虑，GDBT在树的剪枝步骤中考虑了树的复杂度。
+
+###### ·区别二：
+
+。XGBo0st是拟合上一轮损失函数的**二阶导展开**，GDBT是拟合上一轮损失函数的一阶导展开，因此，**XGBoost**
+**的准确性更高**，且满足相同的训练效果，需要的迭代次数更少。
+
+###### ·区别三：
+
+。XGBoost与GDBT都是逐次迭代来提高模型性能，但是**XGBoost在选取最佳切分点时可以开启多线程**进行
 
 
 
@@ -1106,6 +1232,20 @@ $$
 
 
 
+
+
+
+
+
+
+
+
+
+
+
+
+
+ 
 
 部分代码和笔记可以在下面找到
 
