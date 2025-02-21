@@ -946,7 +946,7 @@ max_features: default ="auto”,每个决策树的最大特征数量
 min_samples_split:节点划分最少样本数
 min_samples_leaf:叶子节点的最小样本数
 
- [代码中的demo1函数](17_random_forest_and_GBDT.py) 
+ [代码中的demo1函数](17_compete_random_forest_GBDT_XGB.py) 
 
 #### 2.5 boosting
 
@@ -1058,7 +1058,7 @@ $$
    f(x) = \sum_{m=1}^M \hat{c}_m I(x \in R_m)
    \end{align*}
    $$
-    [代码中的demo2函数](17_random_forest_and_GBDT.py) 
+    [代码中的demo2函数](17_compete_random_forest_GBDT_XGB.py) 
 
 ##### 2.7.3 GBDT的api
 
@@ -1220,6 +1220,108 @@ $$
 
 
 
+##### 2.8.6 api以及代码
+
+ [demo3](17_compete_random_forest_GBDT_XGB.py) 
+
+###### 2.8.6.1 通用参数(general parameters)
+
+1. booster[default=gbtree]
+
+2. 决定使用哪个booster,可以是gbtree,gblinear或者dart。
+
+   gbtree和dart使用基于树的模型(dart主要多了Dropout),而gblinear使用线性函数.
+
+3. 3.silent[default=0]
+
+   设置为0打印运行信息；设置为1静默模式，不打印
+
+4. nthread[default=最大线程数]
+
+   并行运行xgboost的线程数，输入的参数应该<=系统的CPU核心数，若是没有设置算法会检测将其设置为CPU的全部核心数
+
+
+
+下面的两个参数不需要设置，使用默认的就好了
+
+1. num_pbuffer[xgboost自动设置，不需要用户设置]
+
+   预测结果缓存大小，通常设置为训练实例的个数。该缓存用于保存最后boosting:操作的预测结果。
+
+2. num_feature[xgboost自动设置，不需要用户设置]
+
+   在poosting中使用特征的维度，设置为特征的最大维度
+
+
+
+###### 2.8.6.2 Booster 参数（booster parameters）
+
+1. beta
+
+- **default**=0.3
+- **作用**: 更新中减少的步长来防止过拟合。在每次 boosting 之后，可以直接获得新的特征权值，这样可以使得 boosting 更加鲁棒。
+- **范围**: [0, 1]
+
+2. gamma
+
+- **default**=0
+- **作用**: 在节点分裂时，只有分裂后损失函数的值下降了，才会分裂这个节点。Gamma 指定了**节点分裂所需的最小损失函数下降值**。这个参数的值越大，算法越保守。
+
+3. max_depth(**default**=6)  这个值为树的最大深度
+
+4. min_child_weight(**default**=1),决定最小叶子节点样本权重和。XGBoost 的**这个参数是最小样本权重的和**。当它的值较大时，可以避免过拟合
+
+5. subsample(**default**=1), 控制对于每棵树随机采样的比例。减小这个参数的值，算法会更加保守，避免过拟合。
+
+- **典型值**: 0.5-1，0.5 代表平均采样，防止过拟合。
+
+6. colsample_bytree(**default**=1) , 用来控制每棵随机采样的列数的占比（每一列是一个特征）,即上面的m
+
+- **典型值**: 0.5-1
+
+7. colsample_bylevel(**default**=1)
+
+- **作用**: 用来控制树的每一级的每一次分裂，对列数的采样的占比。我个人一般不太用这个参数，因为 subsample 参数和 colsample_bytree 可以起到相同的作用。但是如果感兴趣，可以挖掘这个参数更多的用处。
+- **范围**: (0, 1]
+
+8. lambda(**default**=1)
+
+- **别名**: reg_lambda
+- **作用**: 权重的 **L2 正则化项**（和 Ridge regression 类似）。这个参数是用来控制 XGBoost 的正则化部分的数据科学家很少用到这个参数，但是这个参数在减少过拟合上是可以挖掘出更多用处的。
+
+9. alpha(**default**=0)
+
+- **作用**: 权重的 **L1 正则化项**（和 Lasso regression 类似）。可以应用在很高维度的情况下，使得算法的速度更快。
+
+10. scale_pos_weight(**default**=1)
+
+- **作用**: 在各类别**样本十分不平衡时，把这个参数设定为一个正值，可以使算法更快收敛**。通常可以将其设置为负样本的数目与正样本数目的比值。
+
+
+
+###### 2.8.6.3 学习目标参数（task parameters）
+
+1. Objective [缺省值=reg:linear]
+
+- **reg:linear**  线性回归  
+- **reg:logistic**  逻辑回归  
+- **binary:logistic**  二分类逻辑回归，输出为概率  
+- **multi:softmax**  使用 softmax，返回预测的类别（不是概率）。在这种情况下，你还需要多设一个参数：`num_class`（类别数目）  
+- **multi:softprob**   `multi:softmax` 参数一样，但是返回的是每个数据属于各个类别的概率  
+
+2. eval_metric [缺省值=通过目标函数选择]
+
+可供选择的如下所示：  
+- **rmse**  均方根误差  
+- **mae**  平均绝对值误差  
+- **logloss**  负对数似然函数值  
+- **error**  二分类错误率。其值通过错误分类数目与全部分类数目比值得到。对于预测，预测值大于 0.5 被认为是正类，其它归为负类  
+- **error@t**  不同的划分阈值可以通过 `t` 进行设置  
+- **merror**  多分类错误率，计算公式为 `(wrong cases) / (all cases)`  
+- **mlogloss**  多分类 log 损失  
+- **auc**  曲线下的面积  
+
+##### 2.8.7 [otto案例--xgboost实现](https://blog.csdn.net/qq_46092061/article/details/119118763)
 
 
 
@@ -1239,13 +1341,6 @@ $$
 
 
 
-
-
-
-
-
-
- 
 
 部分代码和笔记可以在下面找到
 
