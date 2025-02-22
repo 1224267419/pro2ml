@@ -1323,15 +1323,56 @@ $$
 
 ##### 2.8.7 [otto案例--xgboost实现](https://blog.csdn.net/qq_46092061/article/details/119118763)
 
+###### 分层抽样
+
+概念：
+一般地，在抽样时，将总体分成互不交叉的层，然后按照一定的比例，从各层独立地抽取一定数量的个体，将各层取出的个体合在一起作为样本，这种抽样的方法叫分层抽样
+
+```python
+sklearn.model_selection.StratifiedShuffleSplit(n_splits=10, test_size=’default’, train_size=None, random_state=None)
+```
+
+参数 n_splits是将训练数据分成train/test对的组数
+test_size和train_size是用来设置train/test对中train和test所占的比例
+这个函数返回的是数据集的索引，而不是直接分割数据
+
+用法:如下
+
+```python
+def demo0():#分层随即划分的用法
+    X = np.array([[1, 2], [3, 4], [1, 2], [3, 4], [1, 2]])
+    Y = np.array([0, 0, 0, 1, 1])
+    ss = StratifiedShuffleSplit(n_splits=5, test_size=0.5, random_state=0)
+
+    for train_index, test_index in ss.split(X, Y):
+        #注意,这个分类器返回的是索引而非值
+        # print("训练集索引",train_index)
+        for i in train_index:
+            print("训练集特征值为",X[i],"目标值为",Y[i])
+        # print("测试集索引",test_index)
+        for i in train_index:
+            print("测试集特征值为",X[i],"目标值为",Y[i])
+```
+
+py如果发现样本**存在严重的数据不平衡**问题，比如正负样本的比例相差的很大，那么这时候就有必要进行分层抽样
+其次，如果不是分类任务，而是其他的任务比如**回归任务**，也**可以使用分层抽样**
+数据集**样本数量很大**（远远大于属性个数）的时候，其实随**机和分层的效果差不多**。
 
 
 
+###### PCA:主成分分析
 
+```python
+from sklearn.decomposition import PCA
+pca = PCA(n_components=0.9)#代表满足最低的主成分方差累计贡献率至少达到0.9
 
+x_train_pca = pca.fit_transform(x_train_scaled)
+x_val_pca = pca.transform(x_val_scaled)
+```
 
+通过PCA降维减少特征数,且保留尽可能多的信息
 
-
-
+[用法](https://blog.csdn.net/weixin_44781900/article/details/104839136)
 
 
 
