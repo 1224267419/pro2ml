@@ -1479,21 +1479,64 @@ lightGBM 主要基于以下方面优化，提升整体特特性：
 
 
 
+##### 2.9.4 api
 
+###### 2.9.4.1 控制参数
 
+| Control Parameters   | 含义                                                         | 用法                                                         |
+| -------------------- | ------------------------------------------------------------ | ------------------------------------------------------------ |
+| max_depth            | 树的最大深度                                                 | 当模型过拟合时,可以考虑首先降低 max_depth                    |
+| min_data_in_leaf     | 叶子可能具有的最小记录数                                     | 默认20，过拟合时用                                           |
+| feature_fraction     | 例如为0.8时，意味着在每次迭代中随机选择 80%的参数来建树      | boosting为random forest 时用                                 |
+| bagging_fraction     | 每次迭代时用的数据比例                                       | 用于加快训练速度和减小过拟合                                 |
+| early_stopping_round | 如果一次验证数据的一个度量**在最近的 early_stopping_round回合中没有提高**，模型 将停止训练 | 加速分析，**减少过多迭代**                                   |
+| lambda               | 指定正则化                                                   | 0~1                                                          |
+| min_gain_to_split    | 描述分裂的最小gain                                           | 控制树的有用的分裂                                           |
+| max_cat_group        | 在 group 边界上找到分割点                                    | 当类别数量很多时，找分割点很容 易过拟合时                    |
+| n_estimators         | 最大迭代次数                                                 | 最大迭代数不必设置过大，可以在 进行一次迭代后，根据最佳迭代数设置 |
 
+###### 2.9.4.2 核心参数
 
+| 海量一 Core Paralmeters | 含义 数据的用途 | 666java.com 用法 选择train或者predict                        |
+| ----------------------- | --------------- | ------------------------------------------------------------ |
+| Task application        | 模型的用途      | regression：回归<br /> binary:二分类<br />multiclass:多分类时 |
+| boosting                | 要用的算法      | gbdt, rf: random forest, dart: Dropouts meet Multiple Additive Regression Trees,goss: Gradient-based One-Side Sampling |
+| num boost_round         | 迭代次数        | 通常100+                                                     |
+| learning_rate           | 学习率          | 常用0.1,0.001,0.003                                          |
+| num _leaves             | 叶子数量        | 默认31                                                       |
+| device                  | 设备            | cpu或者 gpu                                                  |
+| metric                  |                 | mae:meanabsoluteerror, <br />mse:mean squarederror <br />binary_logloss: loss for binary classification , multi_logloss:loss for multi classification |
 
+###### 2.9.4.3  IO 参数
 
+| lO parameter        | 含义                                                         |
+| ------------------- | ------------------------------------------------------------ |
+| max_bin             | 表示feature将存入的bin的最大数量                             |
+| categorical_feature | 如果 categorical_features = 0,1,2，则列 0，1，2是 categorical变量 |
+| ignore_column       | 与 categorical_features 类似，只不过不是将特定的列视为categorical，而是完全忽略 |
+| save_binary         | 这个参数为 true 时，则数据集被保存为二进制文件，下次读数据时速度会变快 qq_46092061 |
 
+###### 2.9.4.4 调参建议
 
+| IO parameter     | 含义                                                         |
+| ---------------- | ------------------------------------------------------------ |
+| num_leaves       | 取值应<= 2(maz-deth)，超过此值会导致过拟合                   |
+| min_data_in_leaf | 将它设置为较大的值可以避免生长太深的树，但可能会导致 underfiting，在大型数据集时 就设置为数百或数干 |
+| max_depth        | 这个也是可以限制树的深度 https://blog.csdn.net/qq_46092061   |
 
+以下给出了三种目的可以调整的参数
 
+| Faster Speed                             | better accuracy                              | over-fitting                                         |
+| ---------------------------------------- | -------------------------------------------- | ---------------------------------------------------- |
+| 将 max bin 设置小一些                    | 用较大的 max_bin                             | max bin 小一些                                       |
+|                                          | num_ _leaves 大一些                          | num_ leaves 小一些                                   |
+| 用 feature_ _fraction 来 做 sub-sampling |                                              | 用 feature_fraction                                  |
+| 用 bagging_fraction 和 bagging_freq      |                                              | 设定 bagging_fraction 和 bagging_freq                |
+| 用 save_binary来加速 数据加载            | 直接用 categorical feature                   | 用gmin_data_in_leaf和 min_sum_hessian_in_leaf        |
+| 用 parallel learning                     | 用dart                                       | 用 lambda_l1, lambda_12 , min_gain_to_split 做正则化 |
+|                                          | num iterations 大一 些， learning_rate 小—些 | 用 max depth 控制树的深度                            |
 
-
-
-
-
+ [demo0](19_LightGBM_otto_demo.py) 函数展示了使用鸢尾花数据集进行模型训练的方法,实现了early_stop和cv网格搜索
 
 
 
@@ -1505,7 +1548,7 @@ lightGBM 主要基于以下方面优化，提升整体特特性：
 
 # TODO
 
-[链接](https://zsyll.blog.csdn.net/category_10993525_2.html)
+[链接](https://zsyll.blog.csdn.net/category_10993525.html)
 [链接](https://blog.csdn.net/2201_75415080?type=blog) 
 
   
