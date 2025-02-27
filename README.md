@@ -1536,11 +1536,16 @@ lightGBM 主要基于以下方面优化，提升整体特特性：
 | 用 parallel learning                     | 用dart                                       | 用 lambda_l1, lambda_12 , min_gain_to_split 做正则化 |
 |                                          | num iterations 大一 些， learning_rate 小—些 | 用 max depth 控制树的深度                            |
 
- [demo0](19_LightGBM_otto_demo.py) 函数展示了使用鸢尾花数据集进行模型训练的方法,实现了early_stop和cv网格搜索
+ [demo0](19_LightGBM_otto_demo.py) 函数展示了使用鸢尾花数据集进行模型训练的方法,实现了liightGBM的early_stop和cv网格搜索 [demo1](19_LightGBM_otto_demo.py)用liightGBM预测了otto数据集的类别结果,准确率达到0.8
 
+2.9.5 PUBG_demo
+[数据集来源](https://www.kaggle.com/competitions/pubg-finish-placement-prediction) target : winPlacePerc -预测的目标。这是一个百分位获胜位置，其中**1对应于第一名，0对应于比赛中的最后一名**。它是根据maxPlace计算的，而不是numGroups，所以在匹配中可能会有丢失的块。
 
+最终结果通过MAE(平均绝对误差)$$
+\text{MAE} = \frac{1}{n} \sum_{i=1}^{n} |y_i - \hat{y}_i|
+$$进行评估
 
-
+ [代码如下](20_LightGBM_PUBG_demo.py) 
 
 
 

@@ -27,10 +27,10 @@ def demo0():    #鸢尾花案例
 
     #创建模型,这里可以使用字典来创建,方便修改和找出参数
     #模型基本训练
-    gbm = lgb.LGBMRegressor(objective='regression',  #学习目标
+    gbm = lgb.LGBMRegressor(objective='regression',  #学习目标:回归
                             learning_rate=0.05, #学习率
                             # n_estimators=20, #学习轮数
-                            n_estimators=90,  # 此时触发early_stop,
+                            n_estimators=90,  # 迭代次数,触发了early_stop
                             feature_fraction_seed=10 #随机数种子
                             )
     callbacks = [lgb.early_stopping(stopping_rounds=10), lgb.log_evaluation(period=1)]  #使用callbacks实现早停
@@ -102,5 +102,5 @@ def demo1():#lightgbm训练otto数据集
     #在不做任何数据处理的前提下,运行速度快而且准确率和f1core均有80%
     #对比18的demo2,在相同数据量的前提下,做到了更高精准率和更快的运算时间
 if __name__ == '__main__':
-    demo0()
-    # demo1()
+    # demo0()
+    demo1()
