@@ -33,7 +33,7 @@ def demo0():    #鸢尾花案例
                             n_estimators=90,  # 迭代次数,触发了early_stop
                             feature_fraction_seed=10 #随机数种子
                             )
-    callbacks = [lgb.early_stopping(stopping_rounds=10), lgb.log_evaluation(period=1)]  #使用callbacks实现早停
+    callbacks = [lgb.early_stopping(stopping_rounds=5), lgb.log_evaluation(period=1)]  #使用callbacks实现早停
 
     gbm.fit(x_train, y_train, eval_set=[(x_test, y_test)], eval_metric='l1',
     callbacks=callbacks    ,    )  # early_stopping_rounds：loss涨的的话，那就是最多5次，后终止

@@ -1538,7 +1538,8 @@ lightGBM 主要基于以下方面优化，提升整体特特性：
 
  [demo0](19_LightGBM_otto_demo.py) 函数展示了使用鸢尾花数据集进行模型训练的方法,实现了liightGBM的early_stop和cv网格搜索 [demo1](19_LightGBM_otto_demo.py)用liightGBM预测了otto数据集的类别结果,准确率达到0.8
 
-2.9.5 PUBG_demo
+##### 2.9.5 PUBG_demo
+
 [数据集来源](https://www.kaggle.com/competitions/pubg-finish-placement-prediction) target : winPlacePerc -预测的目标。这是一个百分位获胜位置，其中**1对应于第一名，0对应于比赛中的最后一名**。它是根据maxPlace计算的，而不是numGroups，所以在匹配中可能会有丢失的块。
 
 最终结果通过MAE(平均绝对误差)$$
@@ -1550,17 +1551,22 @@ $$进行评估
 实现了
 
 1. 数据读入,处理空白值
-
 2. 异常值处理
-
 3. 随机森林训练数据
 
    - 根据训练出的模型分析各特征重要性
    - 训练出的新模型在需要更少特征的前提下达到更高准确度和mae
+4. 训练LGBM模型,并对模型进行调优
 
-4. 训练LGBM模型,与RF进行比较(TODO)
+具体细节见代码
 
-   
+###  3. 聚类算法
+
+#### 3.1聚类算法介绍
+
+一种典型的**无监督学习算法**，主要用于将**相似的样本**自动归到**一个类别**中。
+
+
 
 
 
