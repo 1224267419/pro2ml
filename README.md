@@ -1566,7 +1566,16 @@ $$进行评估
 
 一种典型的**无监督学习算法**，主要用于将**相似的样本**自动归到**一个类别**中。如上述的knn算法
 
+#### 3.2 api :sklearn.cluster.KMeans(n_clusters=8)
 
+- 参数:
+  - **n_clusters**:开始的聚类中心数量
+    - 整型，默认=8，**生成的聚类数**，即产生的质心（centroids）数。
+- 方法:
+  - estimator.fit(x)
+  - estimator.predict(x)
+  - estimator.fit_predict(x) 上述两个方法结合,输出等于predict
+- 计算聚类中心并预测每个样本属于哪个类别,相当于先调用fit(x),然后再调用predict(x)
 
 
 
