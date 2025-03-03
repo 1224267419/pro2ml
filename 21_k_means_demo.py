@@ -50,12 +50,11 @@ if __name__ == '__main__':
     plt.show()
 
     # 2. KMeans聚类, 并使用ch方法评估
-    # demo2(X,y) #2个类
-    # demo3(X,y) #2个类
-    # demo4(X,y) #2个类
+    demo2(X,y) #2个类
+    demo3(X,y) #2个类
+    demo4(X,y) #2个类
     '''
 n_clusters=2时ch分数为: 3116.1706763322227
 n_clusters=3时ch分数为: 2931.5437780930633
 n_clusters=4时ch分数为: 5924.050613480169
 '''
-    demo5(X,y) #2个类
