@@ -1637,12 +1637,9 @@ tr()为矩阵的迹, $$B_k$$为类别之间的协方差矩阵，$$W_k$$为类别
 
 ###### 优点：
 
-Kmeans对噪声抗干扰较弱，通过Canopy对比，将较小的NumPoint的Cluster直接去掉有利于抗干扰。
-
-
-Canopy选择出来的每个Canopy的centerPoint作为K会更精确。
-
-只是针对每个Canopy的内做Kmeans聚类，减少相似计算的数量。
+- Kmeans对噪声抗干扰较弱，通过Canopy对比，将较小的NumPoint的Cluster直接去掉有利于抗干扰。
+- Canopy选择出来的每个Canopy的centerPoint作为K会更精确。
+- 只是**针对每个Canopy的内做Kmeans聚类**，减少相似计算的数量。
 
 ###### 缺点：
 
@@ -1683,11 +1680,60 @@ $$
 
 ##### 3.4.4. k-medoids（k-中心聚类算法）
 
-K-medoids和K-means是有区别的，不一样的地方在于中心点的选取
+- K-medoids和K-means是有区别的，不一样的地方在于**中心点的选取**
+- K-means中，**将中心点取为当前cluster中所有数据点的平均值**，对异常点很敏感!
 
-K-means中，将中心点取为当前cluster中所有数据点的平均值，对异常点很敏感!
+- K-medoids中，将从当**前cluster 中选取到其他所有（当前cluster中的）点的距离之和最小的点作为中心点**。
 
-K-medoids中，将从当前cluster 中选取到其他所有（当前cluster中的）点的距离之和最小的点作为中心点。
+
+
+###### 算法流程：
+
+1. 总体n个样本点中**任意选取k个点作为medoids**
+2. 按照与medoids最近的原则，将**剩余的n-k个点分配到当前最佳的medoids代表的类**中
+3. 对于第i个类中除对应medoids点外的所有其他点，按顺序计算当其为新的medoids时，**代价函数的值，遍历所有可能，选取代价函数最小时对应的点**作为新的medoids
+4. 重复2-3的过程，直到所有的medoids点不再发生变化或已达到设定的最大迭代次数
+5. 产出最终确定的k个类
+
+
+
+##### 3.4.5Kernel k-means 样本投射到高维空间
+
+kernel k-means实际上，就是将每个样本进行一个投射到高维空间的处理，然后再将处理后的数据使用普通的k-means算法思想进行聚类。
+
+##### 3.4.6 ISODATA  类别数目随着聚类过程而变化
+
+对类别数会进行合并，分裂，
+
+“合并”：（当聚类结果某一类中样本数太少，或两个类间的距离太近时）
+
+“分裂”：（当聚类结果中某一类的类内方差太大，将该类进行分裂）
+
+##### 3.4.7Mini Batch K-Means 适合大数据的聚类算法
+
+
+
+| 优化方法           | 思路                         |
+| ------------------ | ---------------------------- |
+| Canopy+kmeans      | Canopy粗聚类配合kmeans       |
+| kmeans++           | 距离越远越容易成为新的质心   |
+| 二分k-means        | 拆除SSE最大的簇              |
+| k-medoids          | 和kmeans选取中心点的方式不同 |
+| kernel kmeans      | 映射到高维空间               |
+| ISODATA            | 动态聚类，可以更改K值大小    |
+| Mini-batch K-Means | 大数据集分批聚类             |
+
+ 
+
+
+
+
+
+
+
+
+
+
 
 
 
@@ -1701,6 +1747,139 @@ K-medoids中，将从当前cluster 中选取到其他所有（当前cluster中�
   - estimator.predict(x)
   - estimator.fit_predict(x) 上述两个方法结合,输出等于predict
 - 计算聚类中心并预测每个样本属于哪个类别,相当于先调用fit(x),然后再调用predict(x)
+
+
+
+### 4. 特征降维 [代码](22_feature_variance.py) 
+
+在某些条件下,**降低特征数量**,使得不同特征间相关性减弱
+
+##### 降维的两种方式
+
+- 特征选择
+- 主成分分析（可以理解一种特征提取的方式）
+
+#### 2. 特征选择
+
+##### 2.1 定义
+
+数据中包含**冗余**或**无关变量**（或称特征、属性、指标等），**旨在从原有特征中找出主要特征。**
+
+##### 2.2 方法
+
+- Filter(过滤式)：主要**探究特征本身特点**、特征与特征和目标值之间关联
+  - **方差选择法：低方差特征过滤**
+  - **相关系数**
+- Embedded (嵌入式)：算法自动选择特征（**特征与目标值之间的关联**）
+  - **决策树:信息熵、信息增益**
+  - **正则化：L1、L2**
+  - **深度学习：卷积等**
+
+######  2.2.1 低方差特征过滤
+
+**删除低方差的一些特征**,低方差意味着特征间区别不大
+
+######  API
+
+```python
+sklearn.feature_selection.VarianceThreshold(threshold = 0.0)
+```
+
+- 删除所有低方差特征,threshold 为特征方差,
+- Variance.fit_transform(X)
+  - X:numpy array格式的数据[n_samples,n_features]
+  - 返回值：删除后的结果,不在原数据上操作。**默认值是保留所有非零方差特征**，即删除所有样本中具有相同值的特征。
+
+##### 2.3 相关系数
+
+- **主要实现方式：**
+  - **皮尔逊相关系数**
+  - **斯皮尔曼相关系数**
+
+###### 2.3.1 皮尔逊相关系数(Pearson Correlation Coefficient)
+
+**反映变量之间相关关系密切程度的统计指标**
+
+**2.公式**
+
+两个变量之间的[协方差](https://baike.baidu.com/item/协方差/0?fromModule=lemma_inlink)和[标准差](https://baike.baidu.com/item/标准差/0?fromModule=lemma_inlink)的商
+$$
+r = \frac{cov(X,Y)}{\sigma X \sigma Y}=\frac{\sum_{i = 1}^{N} (x_i - \bar{x})(y_i - \bar{y})}{\sqrt{\sum_{i = 1}^{N} (x_i - \bar{x})^2} \sqrt{\sum_{i = 1}^{N} (y_i - \bar{y})^2}}
+$$
+
+###### API
+
+``scipy.stats.pearsonr()``
+
+1. 输入：x为特征，y为目标变量.
+2. 输出：r： 相关系数 [-1，1]之间，p-value: p值。
+   注： p值越小，表示相关系数越显著，一般p值在500个样本以上时有较高的可靠性。
+   1. 当r>0时，表示两变量正相关，r<0时，两变量为负相关
+   2. 当|r|=1时，表示两变量为完全相关，当r=0时，表示两变量间无相关关系
+   3. 当0<|r|<1时，表示两变量存在一定程度的相关。且|r|越接近1，两变量间线性关系越密切；|r|越接近于0，表示两变量的线性相关越弱
+      - 一般可按三级划分：|r|<0.4为低度相关；0.4≤|r|<0.7为显著性相关；0.7≤|r|<1为高度线性相关
+
+##### 2.3.2 斯皮尔曼相关系数(Rank IC)
+
+**1.作用：**
+
+反映变量之间相关关系密切程度的统计指标
+
+- 与之前的皮尔逊相关系数大小性质一样，取值 [-1, 1]之间
+- 计算更快,通过等级差来计算
+
+**2.公式计算案例**
+
+**公式:**
+$$
+RankIC = 1 - \frac{6 \sum d_i^2}{n(n^2 - 1)}\\
+n为等级个数，d为二列成对变量的等级差数
+$$
+
+#### 4.2.3. 主成分分析
+
+### 3.1 什么是主成分分析(PCA)
+
+- **定义**：高维数据转化为低维数据的过程，在此过程中可能会舍弃原有数据、创造新的变量
+- **作用**：是数据维数压缩，尽可能降低原数据的维数（复杂度），损失少量信息。
+- **应用**：回归分析或者聚类分析当中
+
+3.2 API
+``sklearn.decomposition.PCA(n_components=None)``
+
+将数据分解为较低维数空间
+n_components:
+
+- 小数：表示保留多少信息
+- 整数：减少到多少特征
+
+ PCA.fit_transform(X) X:numpy array格式的数据[n_samples,n_features]
+返回值：转换后指定维度的array
+
+
+
+#### 5. Instacart Market Basket Analysis demo
+
+代码 :  [23_Instacart_demo.ipynb](23_Instacart_demo.ipynb) [23_Instacart_demo.py](23_Instacart_demo.py)
+
+[数据集下载链接](https://tianchi.aliyun.com/dataset/14981)  ,  [保存位置](./Instacart_dataset)
+
+数据集内容:
+
+order._products._prior..csv:订单与商品信息
+字段：order_.id,product_id,add_to_cart_order,,reordered
+products.csv:商品信息
+字段：product_.id,product_name,aisle,_id,department_.id
+orders..csv:用户的订单信息
+字段：order_id,user_id,eval_set,order_.number,.
+aisles.csv:商品所属具体物品类别
+字段：aisle_id,aisle
+
+```python
+ pd.crosstab(table[x],table[y])
+```
+
+交叉表,用于统计数量,
 
 
 

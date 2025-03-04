@@ -1,7 +1,7 @@
 import matplotlib.pyplot as plt
 from sklearn.datasets import make_blobs
 from sklearn.cluster import KMeans
-from sklearn.metrics import calinski_harabasz_score # 轮廓系数,越大越好
+from sklearn.metrics import calinski_harabasz_score,silhouette_score # 轮廓系数,越大越好
 from sqlalchemy.util import namedtuple
 
 def demo2(X,y):
